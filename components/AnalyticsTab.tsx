@@ -37,7 +37,7 @@ const SortHeader = ({ label, sortKey, currentSortKey, sortOrder, onSort, classNa
           </div>
         )}
       </div>
-      <div className={`flex flex-col text-[10px] leading-[0.5] ${currentSortKey === sortKey ? 'text-[#6699CC]' : 'text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity'}`}>
+      <div className={`flex flex-col text-[10px] leading-[0.5] ${currentSortKey === sortKey ? 'text-[#6699CC]' : 'text-slate-300 transition-opacity'}`}>
         <span className={currentSortKey === sortKey && sortOrder === 'asc' ? 'text-[#6699CC]' : ''}>▲</span>
         <span className={currentSortKey === sortKey && sortOrder === 'desc' ? 'text-[#6699CC]' : ''}>▼</span>
       </div>
@@ -318,7 +318,7 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
                   <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'}} />
                   <Legend verticalAlign="top" align="right" wrapperStyle={{fontSize: '11px', paddingBottom: '20px'}} />
                   <Bar dataKey="displayPromo" name={`По акции (${activeUnit})`} fill="#6699CC" radius={[4, 4, 0, 0]} barSize={24} />
-                  <Bar dataKey="displayBase" name={`Без акции (${activeUnit})`} fill="#E2E8F0" radius={[4, 4, 0, 0]} barSize={24} />
+                  <Bar dataKey="displayBase" name={`Без акции (${activeUnit})`} fill="#94A3B8" radius={[4, 4, 0, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
