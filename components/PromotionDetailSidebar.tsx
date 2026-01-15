@@ -19,13 +19,6 @@ const formatDate = (dateStr: string) => {
 const PromotionDetailSidebar: React.FC<PromotionDetailSidebarProps> = ({ promo, onClose }) => {
   const [activeSubTab, setActiveSubTab] = useState<'analytics' | 'history'>('analytics');
 
-  const mockHistory = promo.auditLog || [
-    { id: '1', timestamp: '2024-03-25T14:30:00', user: 'Иванов А.', action: 'Создание акции', changes: 'Базовые параметры' },
-    { id: '2', timestamp: '2024-03-26T10:15:00', user: 'Петров С.', action: 'Изменение приоритета', changes: '5 -> 8' },
-    { id: '3', timestamp: '2024-03-27T16:45:00', user: 'Сидоров М.', action: 'Добавление помещений', changes: '+12 лотов в Секции 2' },
-    { id: '4', timestamp: '2024-03-28T09:00:00', user: 'Сидоров М.', action: 'Активация', changes: 'Статус: Черновик -> Активна' },
-  ];
-
   const miniChartData = [
     { name: 'Пн', val: 2, noPromo: 1 }, { name: 'Вт', val: 5, noPromo: 2 },
     { name: 'Ср', val: 3, noPromo: 2 }, { name: 'Чт', val: 8, noPromo: 3 },
@@ -90,7 +83,7 @@ const PromotionDetailSidebar: React.FC<PromotionDetailSidebarProps> = ({ promo, 
                           <Tooltip cursor={{fill: '#F8FAFC'}} />
                           <Legend iconType="circle" verticalAlign="top" align="right" wrapperStyle={{fontSize: '10px', fontWeight: 'bold', paddingBottom: '10px'}} />
                           <Bar dataKey="val" name="По акции" fill="#6699CC" radius={[4, 4, 0, 0]} barSize={20} />
-                          <Bar dataKey="noPromo" name="Без акции" fill="#E2E8F0" radius={[4, 4, 0, 0]} barSize={20} />
+                          <Bar dataKey="noPromo" name="Без акции" fill="#D1D5DB" radius={[4, 4, 0, 0]} barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -98,24 +91,24 @@ const PromotionDetailSidebar: React.FC<PromotionDetailSidebarProps> = ({ promo, 
 
               <div className="space-y-4 pb-10">
                 <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-1">Характеристики и условия</h3>
-                <div className="divide-y divide-slate-50 border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm">
-                    <div className="flex justify-between p-4 px-6 hover:bg-slate-50/50 transition-colors">
+                <div className="divide-y divide-slate-50 border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm pointer-events-none">
+                    <div className="flex justify-between p-4 px-6">
                       <span className="text-[13px] font-bold text-slate-400">Жилой комплекс</span>
                       <span className="text-[13px] font-extrabold text-slate-900">{promo.project}</span>
                     </div>
-                    <div className="flex justify-between p-4 px-6 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between p-4 px-6">
                       <span className="text-[13px] font-bold text-slate-400">Условия</span>
                       <span className="text-[13px] font-black text-orange-500">{getConditionText()}</span>
                     </div>
-                    <div className="flex justify-between p-4 px-6 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between p-4 px-6">
                       <span className="text-[13px] font-bold text-slate-400">Суммируется с другими акциями</span>
                       <span className="text-[13px] font-extrabold text-slate-900">{promo.isStackable ? 'Да' : 'Нет'}</span>
                     </div>
-                    <div className="flex justify-between p-4 px-6 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between p-4 px-6">
                       <span className="text-[13px] font-bold text-slate-400">Количество лотов</span>
                       <span className="text-[13px] font-extrabold text-slate-900">{promo.unitIds.length}</span>
                     </div>
-                    <div className="flex justify-between p-4 px-6 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between p-4 px-6">
                       <span className="text-[13px] font-bold text-slate-400">Период</span>
                       <span className="text-[13px] font-extrabold text-slate-600">{formatDate(promo.startDate)} — {promo.endDate ? formatDate(promo.endDate) : 'Без лимита'}</span>
                     </div>
@@ -123,22 +116,31 @@ const PromotionDetailSidebar: React.FC<PromotionDetailSidebarProps> = ({ promo, 
               </div>
             </>
           ) : (
-            <div className="space-y-6 pb-10">
-              <div className="flex flex-col gap-6 relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-100"></div>
-                {mockHistory.map((log) => (
-                  <div key={log.id} className="relative pl-12 group">
-                    <div className="absolute left-[13px] top-1.5 w-2 h-2 rounded-full bg-[#6699CC] border-4 border-white ring-2 ring-[#6699CC]/20 group-hover:scale-125 transition-transform z-10"></div>
-                    <div className="bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:border-[#6699CC]/40 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(log.timestamp).toLocaleString('ru-RU')}</span>
-                        <span className="text-[11px] font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded-md">{log.user}</span>
+            <div className="space-y-8 pb-10 bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-black">История акции #{promo.id.replace('p-', '')}</h3>
+                <p className="text-sm text-slate-400 mt-1">Время по Москве</p>
+              </div>
+
+              <div className="space-y-10">
+                {promo.auditLog?.map((log) => {
+                  const dateObj = new Date(log.timestamp);
+                  const months = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
+                  const formattedDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} (${dateObj.getHours()}:${dateObj.getMinutes().toString().padStart(2, '0')}:${dateObj.getSeconds().toString().padStart(2, '0')})`;
+                  
+                  return (
+                    <div key={log.id} className="space-y-1.5">
+                      <p className="text-[13px] text-slate-300 font-medium">{formattedDate}</p>
+                      <div className="space-y-0.5">
+                         <p className="text-[15px] text-black font-bold">
+                           {log.action}: <span className="font-extrabold">{log.changes}</span>
+                         </p>
+                         <p className="text-[13px] text-slate-400">{log.source || log.user}</p>
+                         <p className="text-[13px] text-slate-400">{log.processType || 'Изменение вручную'}</p>
                       </div>
-                      <p className="text-sm font-bold text-slate-800 mb-1">{log.action}</p>
-                      {log.changes && <p className="text-xs text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-50 italic">“{log.changes}”</p>}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
