@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Promotion, PromotionType, Unit, AnalyticsData } from '../types';
 import { COMMON_STYLES } from '../constants';
@@ -13,6 +12,45 @@ interface AnalyticsTabProps {
   units: Unit[];
   onRowClick: (promo: Promotion) => void;
 }
+
+const MultiSelectFilter = ({ label, options, selected = [], onChange }: { label: string, options: string[], selected: string[], onChange: (vals: string[]) => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="relative flex flex-col gap-1.5 min-w-0">
+      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 truncate">{label}</label>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`${COMMON_STYLES.INPUT} flex items-center justify-between cursor-pointer hover:border-[#6699CC] transition-all`}
+      >
+        <span className="truncate text-[12px] font-medium">
+          {selected.length === 0 ? 'Все' : selected.join(', ')}
+        </span>
+        <svg className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+      </div>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)}></div>
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[70] py-1 max-h-60 overflow-y-auto custom-scrollbar">
+            {options.map(opt => (
+              <label key={opt} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[12px] font-medium text-slate-600">
+                <input 
+                  type="checkbox" 
+                  checked={selected.includes(opt)}
+                  onChange={() => {
+                    const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+                    onChange(next);
+                  }}
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-[#6699CC]"
+                />
+                {opt}
+              </label>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const ChartSkeleton = () => (
   <div className="flex-1 w-full bg-slate-50 rounded-xl relative overflow-hidden animate-pulse">
@@ -61,9 +99,9 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
   const [activeUnit, setActiveUnit] = useState<'шт' | 'м²' | 'руб' | '%'>('шт');
   const [activeRange, setActiveRange] = useState<'week' | 'month'>('month');
 
-  const [filterPromoId, setFilterPromoId] = useState('');
-  const [filterProject, setFilterProject] = useState('');
-  const [filterPromoType, setFilterPromoType] = useState('');
+  const [filterPromoIds, setFilterPromoIds] = useState<string[]>([]);
+  const [filterProjects, setFilterProjects] = useState<string[]>([]);
+  const [filterPromoTypes, setFilterPromoTypes] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -73,12 +111,15 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
   const COLORS_CHART = ['#6699CC', '#5577BB', '#AEC6CF', '#779ECB', '#99CCFF', '#CCCCFF'];
 
   const handleReset = () => {
-    setFilterPromoId('');
-    setFilterProject('');
-    setFilterPromoType('');
+    setFilterPromoIds([]);
+    setFilterProjects([]);
+    setFilterPromoTypes([]);
     setDateFrom('');
     setDateTo('');
   };
+
+  const promoNames = useMemo(() => Array.from(new Set(promotions.map(p => p.name))).sort(), [promotions]);
+  const projects = useMemo(() => Array.from(new Set(promotions.map(p => p.project))).sort(), [promotions]);
 
   const soldSortKey = useMemo(() => {
     switch (activeUnit) {
@@ -108,9 +149,9 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
       };
     });
 
-    if (filterPromoId) result = result.filter(a => a.promoId === filterPromoId);
-    if (filterProject) result = result.filter(a => a.promo?.project === filterProject);
-    if (filterPromoType) result = result.filter(a => a.promo?.type === filterPromoType);
+    if (filterPromoIds.length > 0) result = result.filter(a => filterPromoIds.includes(a.name));
+    if (filterProjects.length > 0) result = result.filter(a => filterProjects.includes(a.project));
+    if (filterPromoTypes.length > 0) result = result.filter(a => filterPromoTypes.includes(a.promo?.type || ''));
     if (dateFrom) result = result.filter(a => (a.promo?.startDate || '') >= dateFrom);
     if (dateTo) result = result.filter(a => (a.promo?.endDate || '9999-12-31') <= (dateTo || '9999-12-31'));
     
@@ -132,7 +173,7 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
     });
 
     return result;
-  }, [promotions, filterPromoId, filterProject, filterPromoType, dateFrom, dateTo, sortKey, sortOrder]);
+  }, [promotions, filterPromoIds, filterProjects, filterPromoTypes, dateFrom, dateTo, sortKey, sortOrder]);
 
   const chartData = useMemo(() => {
     const data = activeRange === 'week' 
@@ -254,27 +295,9 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
 
       <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Акция</label>
-            <select value={filterPromoId} onChange={e => setFilterPromoId(e.target.value)} className={COMMON_STYLES.INPUT}>
-              <option value="">Все акции</option>
-              {promotions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Проект</label>
-            <select value={filterProject} onChange={e => setFilterProject(e.target.value)} className={COMMON_STYLES.INPUT}>
-              <option value="">Все проекты</option>
-              {['ЖК "Гранд Тауэрс"', 'Резиденция Набережная', 'Скай Гарден'].map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Тип акции</label>
-            <select value={filterPromoType} onChange={e => setFilterPromoType(e.target.value)} className={COMMON_STYLES.INPUT}>
-              <option value="">Все типы</option>
-              {Object.values(PromotionType).map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
+          <MultiSelectFilter label="Акция" options={promoNames} selected={filterPromoIds} onChange={setFilterPromoIds} />
+          <MultiSelectFilter label="Проект" options={projects} selected={filterProjects} onChange={setFilterProjects} />
+          <MultiSelectFilter label="Тип акции" options={Object.values(PromotionType)} selected={filterPromoTypes} onChange={setFilterPromoTypes} />
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Период</label>
             <div className="flex gap-2">
@@ -326,7 +349,7 @@ const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ promotions = [], units = []
         </div>
 
         <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 h-[460px] flex flex-col shadow-sm">
-          <h4 className="font-bold text-xs uppercase text-slate-400 tracking-widest mb-6">Вклад акций в общую выручку</h4>
+          <h4 className="font-bold text-xs uppercase text-slate-400 tracking-widest mb-6">Вклад в продажи</h4>
           {isLoading ? <ChartSkeleton /> : (
             <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
