@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Promotion, PromotionStatus } from '../types';
 import { COMMON_STYLES } from '../constants';
@@ -63,7 +62,7 @@ const PromotionDetailSidebar: React.FC<PromotionDetailSidebarProps> = ({ promo, 
                   </div>
                 </div>
                 <div className="p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Конверсия (База)</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Конверсия (без акций)</p>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-black text-slate-400">14.2%</span>
                   </div>
